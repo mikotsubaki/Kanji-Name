@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>椿堂 Japanese Name Maker</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="TSUBAKIDO JAPANESE NAME MAKER — Your Name in Japanese Kanji. Turn your name into kanji with beautiful meanings.">
+<meta name="theme-color" content="#F6F1E7">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Shippori+Mincho:wght@500;600;800&display=swap">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="app" id="app">
+
+  <header class="top">
+    <div class="brand">
+      <span class="brand-seal" aria-hidden="true">椿</span>
+      <span class="brand-text"><span class="brand-jp">椿堂</span><span class="brand-en">TSUBAKIDO</span></span>
+    </div>
+    <div class="top-actions">
+      <span class="local-badge" id="localBadge" hidden></span>
+      <button class="chip-btn" id="langBtn" type="button" aria-label="Language"><span id="langBtnLabel">English</span></button>
+      <button class="icon-btn" id="aboutBtn" type="button" aria-label="About">?</button>
+    </div>
+  </header>
+
+  <div class="title-block">
+    <h1 class="app-title">JAPANESE NAME MAKER</h1>
+    <p class="app-sub">Your Name in Japanese Kanji</p>
+  </div>
+
+  <ol class="steps" id="steps" aria-label="Progress">
+    <li data-step="1"><span class="dot"></span><span class="lbl" data-i18n="step1"></span></li>
+    <li data-step="2"><span class="dot"></span><span class="lbl" data-i18n="step2"></span></li>
+    <li data-step="3"><span class="dot"></span><span class="lbl" data-i18n="step3"></span></li>
+    <li data-step="4"><span class="dot"></span><span class="lbl" data-i18n="step4"></span></li>
+  </ol>
+
+  <main>
+    <!-- 画面① 言語選択 -->
+    <section class="screen" id="s-lang" data-step="1">
+      <h2 class="h2" data-i18n="langTitle"></h2>
+      <p class="lead" data-i18n="tagline"></p>
+      <div class="lang-grid" id="langGrid"></div>
+    </section>
+
+    <!-- 画面② 名前入力・出身国 -->
+    <section class="screen" id="s-name" data-step="2" hidden>
+      <h2 class="h2" data-i18n="nameTitle"></h2>
+      <form class="panel" id="nameForm" autocomplete="off">
+        <label class="field">
+          <span class="field-label" data-i18n="nameLabel"></span>
+          <input class="input input-xl" id="nameInput" type="text" maxlength="40" required data-i18n-ph="namePh" autocapitalize="words" spellcheck="false">
+          <span class="hint" data-i18n="nameHint"></span>
+        </label>
+        <label class="field">
+          <span class="field-label" data-i18n="countryLabel"></span>
+          <select class="input" id="countrySelect"></select>
+          <span class="hint" data-i18n="countryHint"></span>
+          <span class="level" id="levelBadge"></span>
+        </label>
+        <div class="msg" id="nameMsg" hidden></div>
+        <div class="actions">
+          <button type="button" class="btn btn-ghost" data-go="lang" data-i18n="back"></button>
+          <button type="submit" class="btn btn-primary" data-i18n="cont"></button>
+        </div>
+      </form>
+    </section>
+
+    <!-- 画面③ 読み方の確認・好みの選択 -->
+    <section class="screen" id="s-reading" data-step="3" hidden>
+      <h2 class="h2" data-i18n="readingTitle"></h2>
+      <div class="panel">
+        <p class="hint" data-i18n="readingHint"></p>
+        <div class="kata-row">
+          <input class="input kata-input" id="kataInput" type="text" maxlength="24" lang="ja" spellcheck="false" aria-label="Katakana">
+          <button type="button" class="chip-btn" id="padToggle" data-i18n="kanaPad" aria-expanded="false"></button>
+        </div>
+        <div class="kata-meta">
+          <span class="romaji"><span data-i18n="romajiLabel"></span> <b id="romajiOut"></b></span>
+          <span class="src-badge" id="srcBadge"></span>
+        </div>
+        <div class="word-chips" id="wordChips" hidden></div>
+        <div class="kana-pad" id="kanaPad" hidden></div>
+      </div>
+
+      <h3 class="h3" data-i18n="styleTitle"></h3>
+      <p class="hint" data-i18n="styleHint"></p>
+      <div class="pref-grid" id="prefGrid"></div>
+
+      <h3 class="h3" data-i18n="favTitle"></h3>
+      <div class="fav-row">
+        <input class="input fav-input" id="favInput" type="text" maxlength="1" lang="ja" data-i18n-ph="favPh" aria-label="Favorite kanji">
+        <div class="fav-chips" id="favChips"></div>
+      </div>
+      <p class="hint" data-i18n="favHint"></p>
+
+      <div class="msg" id="readingMsg" hidden></div>
+      <div class="actions">
+        <button type="button" class="btn btn-ghost" data-go="name" data-i18n="back"></button>
+        <button type="button" class="btn btn-primary" id="generateBtn" data-i18n="generate"></button>
+      </div>
+    </section>
+
+    <!-- 画面④ 漢字候補・意味・編集 -->
+    <section class="screen" id="s-cands" data-step="4" hidden>
+      <h2 class="h2" data-i18n="candTitle"></h2>
+      <p class="notice" data-i18n="artNotice"></p>
+      <div class="msg" id="candMsg" hidden></div>
+      <div class="cands" id="cands"></div>
+      <p class="hint small" id="meaningLangNote"></p>
+      <div class="actions">
+        <button type="button" class="btn btn-ghost" data-go="reading" data-i18n="back"></button>
+        <button type="button" class="btn btn-ghost" id="restartBtn" data-i18n="restart"></button>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="foot">
+    <span>© TSUBAKIDO 椿堂</span>
+  </footer>
+</div>
+
+<!-- 漢字の変更シート -->
+<div class="sheet-wrap" id="editSheet" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="editTitle">
+    <div class="sheet-head">
+      <h3 class="h3" id="editTitle" data-i18n="editTitle"></h3>
+      <button type="button" class="icon-btn" data-close aria-label="Close">×</button>
+    </div>
+    <p class="hint" data-i18n="editHint"></p>
+    <div class="edit-name" id="editName"></div>
+    <div class="edit-reading" id="editReading"></div>
+    <div class="edit-warn" id="editWarn" hidden></div>
+    <div class="alt-list" id="altList"></div>
+    <div class="actions">
+      <button type="button" class="btn btn-ghost" id="editCancel" data-i18n="cancel"></button>
+      <button type="button" class="btn btn-primary" id="editApply" data-i18n="apply"></button>
+    </div>
+  </div>
+</div>
+
+<!-- 言語選択・このアプリについて -->
+<div class="sheet-wrap" id="modal" hidden>
+  <div class="sheet" role="dialog" aria-modal="true">
+    <div class="sheet-head">
+      <h3 class="h3" id="modalTitle"></h3>
+      <button type="button" class="icon-btn" data-close aria-label="Close">×</button>
+    </div>
+    <div id="modalBody"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script src="js/config.js"></script>
+<script src="data/kanji-db.js"></script>
+<script src="data/names-db.js"></script>
+<script src="js/kana.js"></script>
+<script src="js/engine.js"></script>
+<script src="js/i18n.js"></script>
+<script src="js/countries.js"></script>
+<script src="js/ai.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,11 @@
+{
+  "name": "tsubakido-japanese-name-maker",
+  "version": "1.0.0",
+  "private": true,
+  "description": "椿堂 JAPANESE NAME MAKER — Your Name in Japanese Kanji",
+  "scripts": {
+    "start": "npx --yes serve -l 3000 .",
+    "test": "node tests/test-names.js"
+  },
+  "engines": { "node": ">=18" }
+}

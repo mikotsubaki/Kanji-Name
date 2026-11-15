@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>椿堂 漢字データ管理</title>
+<link rel="stylesheet" href="../css/style.css">
+<style>
+  .app { max-width: 1080px; }
+  .tabs { display: flex; flex-wrap: wrap; gap: 6px; margin: 14px 0; }
+  .tabs button { border: 1px solid var(--line); background: var(--card); border-radius: 999px; padding: 7px 14px; cursor: pointer; }
+  .tabs button[aria-selected="true"] { background: var(--sumi); color: var(--card); border-color: var(--sumi); }
+  .grid2 { display: grid; grid-template-columns: 1fr; gap: 16px; }
+  @media (min-width: 860px) { .grid2 { grid-template-columns: 1.1fr 1fr; } }
+  .tbl-wrap { overflow: auto; max-height: 70vh; border: 1px solid var(--line); border-radius: 8px; background: var(--card); }
+  table.adm { border-collapse: collapse; width: 100%; font-size: 13px; }
+  table.adm th, table.adm td { border-bottom: 1px solid var(--line); padding: 6px 8px; text-align: left; vertical-align: top; }
+  table.adm th { position: sticky; top: 0; background: var(--gold-tint); z-index: 1; }
+  table.adm tr { cursor: pointer; }
+  table.adm tr.sel td { background: var(--shu-tint); }
+  table.adm tr.off td { color: var(--sumi-3); text-decoration: line-through; }
+  .kcell { font-family: var(--f-display); font-size: 22px; }
+  .form { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .form .full { grid-column: 1 / -1; }
+  .form label { display: flex; flex-direction: column; gap: 4px; font-size: 12.5px; color: var(--sumi-2); }
+  .cats { display: flex; flex-wrap: wrap; gap: 8px; font-size: 13px; }
+  .cats label { flex-direction: row; align-items: center; gap: 4px; }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .warnbox { background: var(--warn-tint); color: var(--warn); border-radius: 8px; padding: 10px 12px; font-size: 13.5px; }
+  textarea.input { min-height: 120px; font-family: var(--f-display); font-size: 18px; }
+  .test-out { font-size: 14px; display: flex; flex-direction: column; gap: 6px; }
+  .test-out b { font-family: var(--f-display); font-size: 22px; }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div class="brand"><span class="brand-seal">椿</span><span class="brand-text"><span class="brand-jp">椿堂</span><span class="brand-en">ADMIN</span></span></div>
+    <a class="chip-btn" href="../index.html">アプリを開く</a>
+  </header>
+  <h1 class="h2">漢字データベース管理（ローカル用）</h1>
+  <div class="warnbox">
+    この管理画面はお使いのパソコンの中だけでデータを編集します。編集結果は「書き出し」でファイルにし、GitHub の data フォルダのファイルと差し替えて公開してください。
+    公開サイト（Vercel）では /admin へのアクセスは自動的にトップページへ転送され、誰もデータを書き換えられません。
+  </div>
+
+  <nav class="tabs" role="tablist" id="tabs">
+    <button type="button" role="tab" data-tab="kanji" aria-selected="true">漢字</button>
+    <button type="button" role="tab" data-tab="excluded">除外漢字</button>
+    <button type="button" role="tab" data-tab="names">外国人名の読み</button>
+    <button type="button" role="tab" data-tab="recommended">おすすめ当て字</button>
+    <button type="button" role="tab" data-tab="test">変換テスト</button>
+    <button type="button" role="tab" data-tab="io">保存・読み込み</button>
+  </nav>
+
+  <section data-panel="kanji">
+    <div class="grid2">
+      <div>
+        <div class="row" style="margin-bottom:8px">
+          <input class="input" id="kSearch" placeholder="漢字・読み・意味で検索" style="flex:1">
+          <button class="btn btn-primary" type="button" id="kNew">＋ 漢字を追加</button>
+        </div>
+        <div class="tbl-wrap"><table class="adm"><thead><tr><th>漢字</th><th>画数</th><th>音</th><th>訓</th><th>名乗り</th><th>意味</th><th>評価</th></tr></thead><tbody id="kBody"></tbody></table></div>
+        <p class="hint" id="kCount"></p>
+      </div>
+      <form class="panel" id="kForm" autocomplete="off">
+        <div class="form">
+          <label>漢字（1文字）<input class="input" name="k" maxlength="2" required style="font-size:28px;font-family:var(--f-display)"></label>
+          <label>画数<input class="input" name="strokes" type="number" min="1" max="40"></label>
+          <label>音読み（カタカナ・カンマ区切り）<input class="input" name="on"></label>
+          <label>訓読み（ひらがな）<input class="input" name="kun"></label>
+          <label>名乗り・人名の読み（ひらがな）<input class="input" name="nanori"></label>
+          <label>創作読み（当て字用・カタカナ）<input class="input" name="creative"></label>
+          <label>ポジティブ度（1〜5）<input class="input" name="pol" type="number" min="1" max="5"></label>
+          <label>名前への適性（1〜5）<input class="input" name="fit" type="number" min="1" max="5"></label>
+          <div class="full"><span class="field-label">カテゴリー</span>
+            <div class="cats" id="catsBox"></div>
+          </div>
+          <label class="full">意味（日本語）<input class="input" name="m_ja"></label>
+          <label>英語<input class="input" name="m_en"></label>
+          <label>中国語（簡体）<input class="input" name="m_zh"></label>
+          <label>中国語（繁体）<input class="input" name="m_zt"></label>
+          <label>韓国語<input class="input" name="m_ko"></label>
+          <label>フランス語<input class="input" name="m_fr"></label>
+          <label>ドイツ語<input class="input" name="m_de"></label>
+          <label>スペイン語<input class="input" name="m_es"></label>
+          <label>イタリア語<input class="input" name="m_it"></label>
+          <label>ポルトガル語<input class="input" name="m_pt"></label>
+          <label class="full" style="flex-direction:row;align-items:center;gap:8px"><input type="checkbox" name="disabled"> 候補に使わない（一時的に除外）</label>
+        </div>
+        <div class="warnbox" id="kErr" hidden></div>
+        <div class="row">
+          <button class="btn btn-primary" type="submit">この漢字を保存</button>
+          <button class="btn btn-ghost" type="button" id="kDelete">削除</button>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <section data-panel="excluded" hidden>
+    <p class="hint">名前に使わない漢字（否定的・不適切な意味）を並べて入力します。ここにある漢字は候補にも「好きな漢字」にも使われません。</p>
+    <textarea class="input" id="exArea"></textarea>
+    <div class="row" style="margin-top:8px"><button class="btn btn-primary" type="button" id="exSave">除外漢字を保存</button></div>
+  </section>
+
+  <section data-panel="names" hidden>
+    <p class="hint">よく使われる外国人名の読みを登録します。国によって読みが違う場合は「de:ミヒャエル, fr:ミカエル」のように書きます（en 英語 / fr / de / es / it / pt / nl / ru）。</p>
+    <form class="row" id="nForm" style="margin:10px 0">
+      <input class="input" name="name" placeholder="綴り（例: Michael）" required style="flex:1 1 160px">
+      <input class="input" name="kata" placeholder="読み（例: マイケル）" required style="flex:1 1 160px">
+      <input class="input" name="variants" placeholder="国別の読み（任意）" style="flex:2 1 220px">
+      <button class="btn btn-primary" type="submit">追加・更新</button>
+    </form>
+    <input class="input" id="nSearch" placeholder="検索" style="margin-bottom:8px">
+    <div class="tbl-wrap"><table class="adm"><thead><tr><th>綴り</th><th>読み</th><th>国別の読み</th><th></th></tr></thead><tbody id="nBody"></tbody></table></div>
+  </section>
+
+  <section data-panel="recommended" hidden>
+    <p class="hint">特定の読みに対して、椿堂おすすめの当て字を登録します。お客様の読みと一致すると候補の先頭に「椿堂のおすすめ」として表示されます。各漢字が漢字データにあり、読みが合う場合だけ表示されます。</p>
+    <form class="row" id="rForm" style="margin:10px 0">
+      <input class="input" name="kata" placeholder="読み（例: エマ）" required style="flex:1 1 140px">
+      <input class="input" name="kanji" placeholder="漢字（例: 恵茉）" required style="flex:1 1 140px;font-family:var(--f-display)">
+      <input class="input" name="readings" placeholder="各漢字の読み（任意。例: エ,マ）" style="flex:1 1 180px">
+      <input class="input" name="note" placeholder="説明（お客様に表示。英語で書くと全言語に出ます）" style="flex:2 1 200px">
+      <button class="btn btn-primary" type="submit">登録</button>
+    </form>
+    <div class="warnbox" id="rErr" hidden></div>
+    <div class="tbl-wrap"><table class="adm"><thead><tr><th>読み</th><th>漢字</th><th>読みの割り当て</th><th>メモ</th><th></th></tr></thead><tbody id="rBody"></tbody></table></div>
+  </section>
+
+  <section data-panel="test" hidden>
+    <p class="hint">編集中のデータで変換をテストできます。</p>
+    <div class="row"><input class="input" id="tIn" placeholder="名前またはカタカナ（例: Michael / マイケル）" style="flex:1"><select class="input" id="tProf" style="width:auto">
+      <option value="en">英語</option><option value="fr">フランス語</option><option value="de">ドイツ語</option><option value="es">スペイン語</option><option value="it">イタリア語</option><option value="pt">ポルトガル語</option><option value="zh">中国語ピンイン</option><option value="generic">汎用</option></select>
+      <button class="btn btn-primary" type="button" id="tRun">変換</button></div>
+    <div class="test-out panel" id="tOut" style="margin-top:12px"></div>
+  </section>
+
+  <section data-panel="io" hidden>
+    <div class="panel">
+      <h3 class="h3" style="margin-top:0">公開用ファイルに書き出す</h3>
+      <p class="hint">書き出した2つのファイルを、GitHub の <code>data/</code> フォルダの同名ファイルと差し替えると、公開中のアプリに反映されます。</p>
+      <div class="row"><button class="btn btn-primary" type="button" id="exKanjiJs">kanji-db.js を書き出す</button><button class="btn btn-primary" type="button" id="exNamesJs">names-db.js を書き出す</button></div>
+      <h3 class="h3">JSON で保存・読み込み</h3>
+      <div class="row"><button class="btn btn-ghost" type="button" id="exJson">すべてを JSON で保存</button>
+        <label class="btn btn-ghost">JSON を読み込む<input type="file" id="imJson" accept="application/json,.json" hidden></label></div>
+      <h3 class="h3">このパソコンのアプリで試す</h3>
+      <p class="hint">編集データをこのブラウザのアプリだけに反映します（他の人には影響しません）。アプリ右上に「ローカル編集データ使用中」と表示されます。</p>
+      <div class="row"><button class="btn btn-ghost" type="button" id="applyLocal">このブラウザのアプリに反映</button><button class="btn btn-ghost" type="button" id="clearLocal">反映を解除して元に戻す</button></div>
+      <p class="hint" id="ioMsg"></p>
+    </div>
+  </section>
+</div>
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script src="../js/config.js"></script>
+<script src="../data/kanji-db.js"></script>
+<script src="../data/names-db.js"></script>
+<script src="../js/kana.js"></script>
+<script src="../js/engine.js"></script>
+<script src="admin.js"></script>
+</body>
+</html>
