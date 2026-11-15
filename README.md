@@ -46,7 +46,7 @@ vercel.json           公開設定（/admin を公開サイトで閉じる設定
 2. [Vercel](https://vercel.com) で「Add New → Project」→ そのリポジトリを選択
 3. Framework Preset は **Other**、Build Command・Output Directory は空欄のまま「Deploy」
 
-ファイルを更新したら、`sw.js` の `CACHE = "tsubakido-v3"` の番号を上げると、お客様のスマホにも新しい版がすぐ届きます。
+ファイルを更新したら、`sw.js` の `CACHE = "tsubakido-v4"` の番号を上げると、お客様のスマホにも新しい版がすぐ届きます。
 
 手元で試すときは `index.html` をダブルクリック、またはフォルダで `npx serve .`。テストは `node tests/test-names.js`。
 

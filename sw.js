@@ -1,10 +1,10 @@
 /* 椿堂 JAPANESE NAME MAKER — オフライン用サービスワーカー
    アプリの中身を更新したら CACHE の番号を上げてください。 */
-const CACHE = "tsubakido-v3";
+const CACHE = "tsubakido-v4";
 const ASSETS = [
   "./", "./index.html", "./css/style.css", "./manifest.webmanifest",
   "./js/config.js", "./js/kana.js", "./js/engine.js", "./js/i18n.js", "./js/countries.js", "./js/ai.js", "./js/app.js",
-  "./data/kanji-db.js", "./data/names-db.js", "./icons/icon-192.png", "./icons/icon-512.png", "./icons/icon.svg"
+  "./data/kanji-db.js", "./data/names-db.js", "./icons/icon-192.png", "./icons/icon-512.png", "./icons/apple-touch-icon.png", "./icons/favicon.ico", "./icons/favicon-32.png"
 ];
 self.addEventListener("install", (e) => { e.waitUntil(caches.open(CACHE).then((c) => c.addAll(ASSETS)).then(() => self.skipWaiting())); });
 self.addEventListener("activate", (e) => {
